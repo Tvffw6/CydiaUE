@@ -1,0 +1,651 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: WebHub API - iOS/Cydia-inspired app hub
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: categories
+    description: Category operations
+  - name: apps
+    description: App/site operations
+  - name: admin
+    description: Admin operations
+
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /categories:
+    get:
+      operationId: listCategories
+      tags: [categories]
+      summary: List all categories
+      responses:
+        "200":
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Category"
+    post:
+      operationId: createCategory
+      tags: [categories]
+      summary: Create a new category (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+        "401":
+          description: Unauthorized
+
+  /categories/{id}:
+    get:
+      operationId: getCategory
+      tags: [categories]
+      summary: Get a single category with its apps
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Category with apps
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CategoryWithApps"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateCategory
+      tags: [categories]
+      summary: Update a category (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryPatch"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteCategory
+      tags: [categories]
+      summary: Delete a category (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not found
+
+  /apps:
+    get:
+      operationId: listApps
+      tags: [apps]
+      summary: List apps with optional filters
+      parameters:
+        - name: categoryId
+          in: query
+          schema:
+            type: integer
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: featured
+          in: query
+          schema:
+            type: boolean
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of apps
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/App"
+    post:
+      operationId: createApp
+      tags: [apps]
+      summary: Create a new app (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AppInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/App"
+        "401":
+          description: Unauthorized
+    delete:
+      operationId: deleteAllApps
+      tags: [apps]
+      summary: Delete all apps (admin)
+      responses:
+        "204":
+          description: All apps deleted
+        "401":
+          description: Unauthorized
+
+  /apps/featured:
+    get:
+      operationId: listFeaturedApps
+      tags: [apps]
+      summary: Get featured apps
+      responses:
+        "200":
+          description: Featured apps
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/App"
+
+  /apps/recent:
+    get:
+      operationId: listRecentApps
+      tags: [apps]
+      summary: Get recently added apps
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Recent apps
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/App"
+
+  /apps/popular:
+    get:
+      operationId: listPopularApps
+      tags: [apps]
+      summary: Get popular apps sorted by click count
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Popular apps
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/App"
+
+  /apps/{id}:
+    get:
+      operationId: getApp
+      tags: [apps]
+      summary: Get a single app
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: App
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/App"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateApp
+      tags: [apps]
+      summary: Update an app (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AppPatch"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/App"
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteApp
+      tags: [apps]
+      summary: Delete an app (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not found
+
+  /apps/{id}/click:
+    post:
+      operationId: trackAppClick
+      tags: [apps]
+      summary: Increment click count for an app
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Click tracked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/App"
+
+  /admin/login:
+    post:
+      operationId: adminLogin
+      tags: [admin]
+      summary: Admin login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminLoginInput"
+      responses:
+        "200":
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSession"
+        "401":
+          description: Invalid credentials
+
+  /admin/logout:
+    post:
+      operationId: adminLogout
+      tags: [admin]
+      summary: Admin logout
+      responses:
+        "204":
+          description: Logged out
+
+  /admin/me:
+    get:
+      operationId: adminMe
+      tags: [admin]
+      summary: Get current admin session
+      responses:
+        "200":
+          description: Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSession"
+        "401":
+          description: Unauthorized
+
+  /admin/stats:
+    get:
+      operationId: getStats
+      tags: [admin]
+      summary: Get dashboard stats for admin
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminStats"
+        "401":
+          description: Unauthorized
+
+  /admin/upload:
+    post:
+      operationId: uploadIcon
+      tags: [admin]
+      summary: Upload an icon/image for an app
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/UploadInput"
+      responses:
+        "200":
+          description: Uploaded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadResult"
+        "401":
+          description: Unauthorized
+
+  /settings:
+    get:
+      operationId: getSettings
+      tags: [admin]
+      summary: Get site settings (public)
+      responses:
+        "200":
+          description: Site settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SiteSettings"
+    put:
+      operationId: updateSettings
+      tags: [admin]
+      summary: Update site settings (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SiteSettingsInput"
+      responses:
+        "200":
+          description: Updated settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SiteSettings"
+        "401":
+          description: Unauthorized
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    Category:
+      type: object
+      required: [id, name, slug, icon, color, sortOrder, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        slug:
+          type: string
+        icon:
+          type: string
+        color:
+          type: string
+        description:
+          type: ["string", "null"]
+        sortOrder:
+          type: integer
+        createdAt:
+          type: string
+
+    CategoryWithApps:
+      type: object
+      required: [id, name, slug, icon, color, sortOrder, createdAt, apps]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        slug:
+          type: string
+        icon:
+          type: string
+        color:
+          type: string
+        description:
+          type: ["string", "null"]
+        sortOrder:
+          type: integer
+        createdAt:
+          type: string
+        apps:
+          type: array
+          items:
+            $ref: "#/components/schemas/App"
+
+    CategoryInput:
+      type: object
+      required: [name, slug, icon, color]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        slug:
+          type: string
+          minLength: 1
+        icon:
+          type: string
+        color:
+          type: string
+        description:
+          type: string
+        sortOrder:
+          type: integer
+
+    CategoryPatch:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        slug:
+          type: string
+        icon:
+          type: string
+        color:
+          type: string
+        description:
+          type: string
+        sortOrder:
+          type: integer
+
+    App:
+      type: object
+      required: [id, title, url, categoryId, description, icon, featured, clickCount, createdAt]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        url:
+          type: string
+        categoryId:
+          type: integer
+        categoryName:
+          type: ["string", "null"]
+        description:
+          type: string
+        icon:
+          type: ["string", "null"]
+        featured:
+          type: boolean
+        clickCount:
+          type: integer
+        createdAt:
+          type: string
+
+    AppInput:
+      type: object
+      required: [title, url, categoryId, description]
+      properties:
+        title:
+          type: string
+          minLength: 1
+        url:
+          type: string
+          minLength: 1
+        categoryId:
+          type: integer
+        description:
+          type: string
+        icon:
+          type: string
+        featured:
+          type: boolean
+
+    AppPatch:
+      type: object
+      properties:
+        title:
+          type: string
+        url:
+          type: string
+        categoryId:
+          type: integer
+        description:
+          type: string
+        icon:
+          type: string
+        featured:
+          type: boolean
+
+    AdminLoginInput:
+      type: object
+      required: [password]
+      properties:
+        password:
+          type: string
+          minLength: 1
+
+    AdminSession:
+      type: object
+      required: [authenticated]
+      properties:
+        authenticated:
+          type: boolean
+
+    AdminStats:
+      type: object
+      required: [totalApps, totalCategories, totalClicks, recentAppsCount]
+      properties:
+        totalApps:
+          type: integer
+        totalCategories:
+          type: integer
+        totalClicks:
+          type: integer
+        recentAppsCount:
+          type: integer
+
+    UploadInput:
+      type: object
+      required: [filename]
+      properties:
+        filename:
+          type: string
+
+    UploadResult:
+      type: object
+      required: [url]
+      properties:
+        url:
+          type: string
+
+    SiteSettings:
+      type: object
+      required: [announcement]
+      properties:
+        announcement:
+          type: ["string", "null"]
+
+    SiteSettingsInput:
+      type: object
+      properties:
+        announcement:
+          type: ["string", "null"]
