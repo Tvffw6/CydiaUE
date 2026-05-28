@@ -1,0 +1,1 @@
+{"version":3,"file":"appInput.d.ts","sourceRoot":"","sources":["../../../src/generated/types/appInput.ts"],"names":[],"mappings":"AAAA;;;;;;GAMG;AAEH,MAAM,WAAW,QAAQ;IACvB,mBAAmB;IACnB,KAAK,EAAE,MAAM,CAAC;IACd,mBAAmB;IACnB,GAAG,EAAE,MAAM,CAAC;IACZ,UAAU,EAAE,MAAM,CAAC;IACnB,WAAW,EAAE,MAAM,CAAC;IACpB,IAAI,CAAC,EAAE,MAAM,CAAC;IACd,QAAQ,CAAC,EAAE,OAAO,CAAC;CACpB"}
